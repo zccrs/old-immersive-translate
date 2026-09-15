@@ -1,0 +1,38 @@
+name: Build Browser Extensions
+
+on:
+  push:
+    branches:
+      - main
+      - opencode-support
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build browser extensions
+        run: npm run build
+
+      - name: Upload browser extension packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-extensions
+          path: |
+            dist/chrome.zip
+            dist/firefox.zip
+          if-no-files-found: error
