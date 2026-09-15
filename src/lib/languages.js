@@ -5170,6 +5170,9 @@ const twpLang = (function () {
     forPageTranslation = false
   ) {
     lang = twpLang.fixTLanguageCode(lang);
+    // OpenCode is an LLM translation service and is not limited by the
+    // static language lists used by the legacy machine-translation services.
+    if (serviceName === "opencode") return serviceName;
     if (!twpLang.SupportedLanguages[serviceName])
       return pageTranslationServices[0];
     if (
