@@ -420,10 +420,30 @@ twpConfig.onReady(function () {
     }
 
     // translations options
+    function updateOpenCodeSettingsVisibility() {
+        $("#openCodeSettings").style.display =
+            $("#pageTranslatorService").value === "opencode" ? "block" : "none"
+    }
+
     $("#pageTranslatorService").onchange = e => {
         twpConfig.set("pageTranslatorService", e.target.value)
+        updateOpenCodeSettingsVisibility()
     }
     $("#pageTranslatorService").value = twpConfig.get("pageTranslatorService")
+    updateOpenCodeSettingsVisibility()
+
+    const openCodeSettings = [
+        ["#openCodeApiUrl", "openCodeApiUrl"],
+        ["#openCodeApiKey", "openCodeApiKey"],
+        ["#openCodeModel", "openCodeModel"],
+    ]
+    openCodeSettings.forEach(([selector, configName]) => {
+        const input = $(selector)
+        input.value = twpConfig.get(configName) || ""
+        input.onchange = e => {
+            twpConfig.set(configName, e.target.value.trim())
+        }
+    })
 
 
     $("#translateTag_pre").onchange = e => {
