@@ -8,6 +8,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,6 +18,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -36,3 +41,22 @@ jobs:
             dist/chrome.zip
             dist/firefox.zip
           if-no-files-found: error
+
+      - name: Move development release tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/opencode-support'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f opencode-latest "$GITHUB_SHA"
+          git push origin refs/tags/opencode-latest --force
+
+      - name: Create or update OpenCode development release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/opencode-support'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view opencode-latest >/dev/null 2>&1; then
+            gh release upload opencode-latest               dist/chrome.zip               dist/firefox.zip               --clobber
+          else
+            gh release create opencode-latest               dist/chrome.zip               dist/firefox.zip               --title "OpenCode Development Build"               --notes "Automatically built from the latest opencode-support commit."               --prerelease
+          fi
